@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soar & Solve</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            overflow: hidden;
+        }
+        
+        #game-container {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 700px;
+            width: 100%;
+            max-height: 98vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (max-height: 900px) {
+            #game-container {
+                padding: 15px;
+                max-height: 97vh;
+            }
+            
+            h1 {
+                font-size: 1.6em !important;
+                margin-bottom: 10px !important;
+            }
+            
+            h2 {
+                font-size: 1.4em !important;
+                margin-bottom: 15px !important;
+            }
+            
+            button {
+                padding: 10px 25px !important;
+                font-size: 1em !important;
+                margin: 6px !important;
+            }
+            
+            #target-number {
+                font-size: 2em !important;
+                margin: 10px 0 !important;
+                padding: 10px !important;
+            }
+            
+            #grid {
+                margin: 10px auto !important;
+            }
+            
+            #high-score-display {
+                font-size: 1em !important;
+                padding: 8px !important;
+                margin-bottom: 10px !important;
+            }
+            
+            .setting {
+                margin: 10px 0 !important;
+            }
+            
+            .operations {
+                margin: 10px 0 !important;
+            }
+        }
+        
+        @media (max-height: 720px) {
+            #game-container {
+                padding: 10px;
+                max-height: 96vh;
+            }
+            
+            h1 {
+                font-size: 1.4em !important;
+                margin-bottom: 8px !important;
+            }
+            
+            h2 {
+                font-size: 1.2em !important;
+                margin-bottom: 10px !important;
+            }
+            
+            button {
+                padding: 8px 20px !important;
+                font-size: 0.9em !important;
+                margin: 4px !important;
+            }
+            
+            #target-number {
+                font-size: 1.8em !important;
+                margin: 8px 0 !important;
+                padding: 8px !important;
+            }
+            
+            #grid {
+                margin: 8px auto !important;
+                gap: 3px !important;
+            }
+            
+            #high-score-display {
+                font-size: 0.9em !important;
+                padding: 6px !important;
+                margin-bottom: 8px !important;
+            }
+            
+            .high-score-row {
+                margin: 3px 0 !important;
+            }
+            
+            .setting {
+                margin: 8px 0 !important;
+            }
+            
+            .setting label {
+                font-size: 1em !important;
+            }
+            
+            .operations {
+                margin: 8px 0 !important;
+                gap: 10px !important;
+            }
+            
+            .operation-toggle label {
+                font-size: 1em !important;
+            }
+            
+            #game-info {
+                font-size: 1em !important;
+                margin-bottom: 10px !important;
+            }
+            
+            #timer {
+                font-size: 1.1em !important;
+                padding: 6px 12px !important;
+            }
+            
+            .grid-option {
+                padding: 8px 12px !important;
+                margin: 4px !important;
+                font-size: 0.9em !important;
+            }
+            
+            #final-score {
+                font-size: 1.5em !important;
+                margin: 10px 0 !important;
+            }
+            
+            .levelup-option {
+                padding: 8px 12px !important;
+                margin: 4px !important;
+                font-size: 0.9em !important;
+            }
+        }
+        
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+        
+        h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+        
+        #menu, #pause-menu, #settings-menu {
+            text-align: center;
+        }
+        
+        #high-score-display {
+            font-size: 1.2em;
+            color: #667eea;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f0f0ff;
+            border-radius: 10px;
+        }
+        
+        .high-score-row {
+            margin: 5px 0;
+        }
+        
+        .setting {
+            margin: 15px 0;
+        }
+        
+        .setting label {
+            font-size: 1.1em;
+            margin-right: 10px;
+            color: #333;
+        }
+        
+        .setting input[type="number"] {
+            padding: 8px;
+            font-size: 1.1em;
+            width: 80px;
+            border: 2px solid #667eea;
+            border-radius: 5px;
+        }
+        
+        .setting input[type="number"].selected, .setting input[type="number"].keyboard-selected {
+            border: 3px solid #5568d3;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+        
+        .operations {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        
+        .operation-toggle {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .operation-toggle input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #667eea;
+        }
+        
+        .operation-toggle.selected, .operation-toggle.keyboard-selected {
+            background: #e8eeff;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        
+        .operation-toggle label {
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 8px;
+            transition: all 0.3s;
+        }
+        
+        button:hover, button.selected, button.keyboard-selected {
+            background: #5568d3;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        button.secondary {
+            background: #888;
+        }
+        
+        button.secondary:hover, button.secondary.selected, button.secondary.keyboard-selected {
+            background: #666;
+        }
+        
+        #reset-high-score-btn {
+            background: #e74c3c;
+            font-size: 0.9em;
+            padding: 8px 16px;
+            margin-top: 10px;
+        }
+        
+        #reset-high-score-btn:hover, #reset-high-score-btn.selected {
+            background: #c0392b;
+        }
+        
+        #confirm-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        #confirm-dialog.show {
+            display: flex;
+        }
+        
+        .confirm-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+        }
+        
+        .confirm-box h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+        
+        .confirm-box p {
+            margin-bottom: 25px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        
+        #game, #pause-menu, #settings-menu {
+            display: none;
+        }
+        
+        #game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: #333;
+        }
+        
+        #timer {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+            padding: 8px 16px;
+            background: #f0f0ff;
+            border-radius: 10px;
+        }
+        
+        #timer.warning {
+            color: #e74c3c;
+            background: #ffe0e0;
+            animation: pulse 0.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        #target-number {
+            text-align: center;
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+        }
+        
+        #grid {
+            display: grid;
+            gap: 5px;
+            margin: 15px auto;
+            max-width: 600px;
+        }
+        
+        #grid.size-4-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        #grid.size-5-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        
+        #grid.size-6-6 {
+            grid-template-columns: repeat(6, 1fr);
+        }
+        
+        #grid.size-7-7 {
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        #grid.size-6-4 {
+            grid-template-columns: repeat(6, 1fr);
+        }
+        
+        #grid.size-7-5 {
+            grid-template-columns: repeat(7, 1fr);
+        }
+        
+        #grid.size-8-6 {
+            grid-template-columns: repeat(8, 1fr);
+        }
+        
+        #grid.size-9-7 {
+            grid-template-columns: repeat(9, 1fr);
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            background: white;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .cell:hover {
+            background: #f0f0ff;
+            transform: scale(1.05);
+        }
+        
+        .cell.player:hover {
+            background: #d0e0ff;
+        }
+        
+        #grid.size-4-4 .cell {
+            font-size: 1.8em;
+        }
+        
+        #grid.size-5-5 .cell {
+            font-size: 1.6em;
+        }
+        
+        #grid.size-6-6 .cell, #grid.size-6-4 .cell {
+            font-size: 1.4em;
+        }
+        
+        #grid.size-7-7 .cell, #grid.size-7-5 .cell {
+            font-size: 1.2em;
+        }
+        
+        #grid.size-8-6 .cell {
+            font-size: 1.1em;
+        }
+        
+        #grid.size-9-7 .cell {
+            font-size: 1em;
+        }
+        
+        .cell.player {
+            background: #e0f0ff;
+            border-color: #4a90e2;
+        }
+        
+        .character {
+            font-size: 2em;
+            transition: transform 0.2s;
+            user-select: none;
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .eagle-sprite {
+            width: 90%;
+            height: 90%;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .egg-sprite {
+            width: 24px;
+            height: 24px;
+            image-rendering: pixelated;
+            image-rendering: -moz-crisp-edges;
+            image-rendering: crisp-edges;
+        }
+        
+        .character.picking {
+            animation: pickup 0.3s;
+        }
+        
+        @keyframes pickup {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.3) translateY(-10px); }
+        }
+        
+        .cell.correct {
+            animation: fadeOut 0.5s;
+        }
+        
+        .cell.wrong {
+            background: #ff4444 !important;
+            animation: wrongPulse 0.5s;
+        }
+        
+        @keyframes wrongPulse {
+            0%, 100% { background: #ff4444; }
+            50% { background: #ff0000; }
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+        
+        @keyframes levelUpFade {
+            to {
+                opacity: 0;
+            }
+        }
+        
+        #grid.level-up .cell {
+            animation: levelUpFade 0.5s forwards;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        #grid.shake {
+            animation: shake 0.5s;
+        }
+        
+        #game-over {
+            display: none;
+            text-align: center;
+        }
+        
+        #game-over h2 {
+            color: #667eea;
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        
+        #final-score {
+            font-size: 1.8em;
+            margin: 15px 0;
+            color: #333;
+        }
+        
+        .lives {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        
+        #pause-menu h2 {
+            margin-bottom: 30px;
+        }
+        
+        .grid-option {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background: #f0f0ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .grid-option:hover, .grid-option.selected {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+        
+        .levelup-option {
+            display: inline-block;
+            margin: 5px;
+            padding: 10px 15px;
+            background: #f0f0ff;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .levelup-option:hover, .levelup-option.selected {
+            background: #667eea;
+            color: white;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>🦅 Soar & Solver</h1>
+        
+        <div id="menu">
+            <div id="high-score-display">
+                <div class="high-score-row">🏆 High Score: <span id="high-score-value">0</span></div>
+                <div class="high-score-row">⏱️ Timed High Score: <span id="timed-high-score-value">0</span></div>
+            </div>
+            
+            <div class="setting">
+                <label for="max-number">Largest Number:</label>
+                <input type="number" id="max-number" value="5" min="5" max="20">
+            </div>
+            
+            <div class="setting">
+                <p style="margin-bottom: 10px; font-size: 1.1em;">Operations:</p>
+                <div class="operations">
+                    <div class="operation-toggle">
+                        <input type="checkbox" id="addition" checked>
+                        <label for="addition">Addition (+)</label>
+                    </div>
+                    <div class="operation-toggle">
+                        <input type="checkbox" id="subtraction">
+                        <label for="subtraction">Subtraction (−)</label>
+                    </div>
+                    <div class="operation-toggle">
+                        <input type="checkbox" id="multiplication">
+                        <label for="multiplication">Multiplication (×)</label>
+                    </div>
+                    <div class="operation-toggle">
+                        <input type="checkbox" id="division">
+                        <label for="division">Division (÷)</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button id="start-btn">Start Game</button>
+            <button id="start-timed-btn">Start Timed Game (2 min)</button>
+            <br>
+            <button id="settings-btn" class="secondary">Settings</button>
+            <button id="reset-high-score-btn">Reset High Scores</button>
+        </div>
+        
+        <div id="settings-menu">
+            <h2>⚙️ Settings</h2>
+            
+            <div class="setting">
+                <p style="font-size: 1.2em; margin-bottom: 10px;">Grid Size:</p>
+                <div id="grid-size-options">
+                    <div class="grid-option" data-width="4" data-height="4">4×4</div>
+                    <div class="grid-option" data-width="5" data-height="5">5×5</div>
+                    <div class="grid-option" data-width="6" data-height="6">6×6</div>
+                    <div class="grid-option" data-width="7" data-height="7">7×7</div>
+                    <br>
+                    <div class="grid-option" data-width="6" data-height="4">6×4</div>
+                    <div class="grid-option" data-width="7" data-height="5">7×5</div>
+                    <div class="grid-option" data-width="8" data-height="6">8×6</div>
+                    <div class="grid-option" data-width="9" data-height="7">9×7</div>
+                </div>
+            </div>
+            
+            <div class="setting">
+                <p style="font-size: 1.2em; margin-bottom: 10px;">Level Up Every:</p>
+                <div id="levelup-interval-options">
+                    <div class="levelup-option" data-interval="10">10 correct</div>
+                    <div class="levelup-option" data-interval="15">15 correct</div>
+                    <div class="levelup-option" data-interval="20">20 correct</div>
+                    <div class="levelup-option" data-interval="25">25 correct</div>
+                </div>
+            </div>
+            
+            <div class="setting">
+                <div class="operation-toggle">
+                    <input type="checkbox" id="allow-negative">
+                    <label for="allow-negative">Allow Negative Numbers</label>
+                </div>
+            </div>
+            
+            <button id="settings-back-btn">Back to Menu</button>
+        </div>
+        
+        <div id="pause-menu">
+            <h2>⏸️ PAUSED</h2>
+            <button id="resume-btn">Resume Game</button>
+            <button id="restart-from-pause-btn">Restart Game</button>
+            <button id="main-menu-btn" class="secondary">Main Menu</button>
+        </div>
+        
+        <div id="game">
+            <div id="game-info">
+                <div>Score: <span id="score">0</span></div>
+                <div id="timer" style="display: none;">⏱️ <span id="timer-value">2:00</span></div>
+                <div class="lives" id="lives"></div>
+            </div>
+            
+            <div id="target-number">0</div>
+            
+            <div id="grid"></div>
+            
+            <p style="text-align: center; color: #666; margin-top: 10px; font-size: 0.9em;">
+                WASD/Arrows: move | SPACE: select | Click: move | Click again: select | ESC: pause
+            </p>
+        </div>
+        
+        <div id="game-over">
+            <h2>Game Over!</h2>
+            <div id="final-score"></div>
+            <div id="new-high-score" style="display: none; color: #ffd700; font-size: 1.3em; margin: 10px 0;">🎉 NEW HIGH SCORE! 🎉</div>
+            <div id="new-timed-high-score" style="display: none; color: #ffd700; font-size: 1.3em; margin: 10px 0;">🎉 NEW TIMED HIGH SCORE! 🎉</div>
+            <button id="restart-btn">Play Again</button>
+            <button id="game-over-menu-btn" class="secondary">Main Menu</button>
+        </div>
+        
+        <div id="confirm-dialog">
+            <div class="confirm-box">
+                <h3>⚠️ Reset High Scores?</h3>
+                <p>Are you sure you want to reset both high scores? This cannot be undone!</p>
+                <button id="confirm-yes-btn">Yes, Reset</button>
+                <button id="confirm-no-btn" class="secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+		function levelUpTransition() {
+            gameState.isLevelingUp = true;
+            gameState.maxNumber++;
+            
+            // Play success sound
+            playSound('levelup');
+            
+            // Fade out all cells
+            const gridContainer = document.getElementById('grid');
+            gridContainer.classList.add('level-up');
+            
+            setTimeout(() => {
+                // Regenerate entire grid with new max number
+                initGrid();
+                gridContainer.classList.remove('level-up');
+                updateDisplay();
+                gameState.isLevelingUp = false;
+            }, 700);
+		}
+        // Sound effects using Web Audio API
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            const now = audioContext.currentTime;
+            
+            if (type === 'move') {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = 300;
+                gain.gain.value = 0.08;
+                osc.start(now);
+                osc.stop(now + 0.05);
+            } else if (type === 'correct') {
+                [523.25, 659.25, 783.99].forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, now + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.08 + 0.2);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.2);
+                });
+            } else if (type === 'wrong') {
+                [392, 349.23, 293.66].forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'triangle';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.15);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.15);
+                });
+            } else if (type === 'pickup') {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.setValueAtTime(400, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            } else if (type === 'gameover') {
+                [392, 349.23, 293.66, 261.63].forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.15, now + i * 0.15);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.15 + 0.3);
+                    osc.start(now + i * 0.15);
+                    osc.stop(now + i * 0.15 + 0.3);
+                });
+            } else if (type === 'highscore') {
+                [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.4);
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.4);
+                });
+            } else if (type === 'levelup') {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.setValueAtTime(523.25, now);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'pause') {
+                [440, 440].forEach((freq, i) => {
+                    const osc = audioContext.createOscillator();
+                    const gain = audioContext.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioContext.destination);
+                    osc.frequency.value = freq;
+                    gain.gain.value = 0.1;
+                    osc.start(now + i * 0.1);
+                    osc.stop(now + i * 0.1 + 0.05);
+                });
+            } else if (type === 'menu') {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+                osc.frequency.value = 800;
+                gain.gain.setValueAtTime(0.1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now);
+                osc.stop(now + 0.1);
+            }
+        }
+        
+        // Cookie functions
+        function setCookie(name, value, days) {
+            const expires = new Date();
+            expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = name + '=' + value + ';expires=' + expires.toUTCString() + ';path=/';
+        }
+        
+        function getCookie(name) {
+            const nameEQ = name + '=';
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+        
+        function getHighScore() {
+            const score = getCookie('mathMunchHighScore');
+            return score ? parseInt(score) : 0;
+        }
+        
+        function getTimedHighScore() {
+            const score = getCookie('mathMunchTimedHighScore');
+            return score ? parseInt(score) : 0;
+        }
+        
+        function saveHighScore(score) {
+            setCookie('mathMunchHighScore', score, 365);
+            updateHighScoreDisplay();
+        }
+        
+        function saveTimedHighScore(score) {
+            setCookie('mathMunchTimedHighScore', score, 365);
+            updateHighScoreDisplay();
+        }
+        
+        function updateHighScoreDisplay() {
+            const highScore = getHighScore();
+            const timedHighScore = getTimedHighScore();
+            document.getElementById('high-score-value').textContent = highScore;
+            document.getElementById('timed-high-score-value').textContent = timedHighScore;
+        }
+        
+        function saveSettings() {
+            const maxNumber = document.getElementById('max-number').value;
+            const addition = document.getElementById('addition').checked;
+            const subtraction = document.getElementById('subtraction').checked;
+            const multiplication = document.getElementById('multiplication').checked;
+            const division = document.getElementById('division').checked;
+            const allowNegative = document.getElementById('allow-negative').checked;
+            
+            setCookie('mathMunchGridWidth', gameState.gridWidth, 365);
+            setCookie('mathMunchGridHeight', gameState.gridHeight, 365);
+            setCookie('mathMunchMaxNumber', maxNumber, 365);
+            setCookie('mathMunchAddition', addition ? '1' : '0', 365);
+            setCookie('mathMunchSubtraction', subtraction ? '1' : '0', 365);
+            setCookie('mathMunchMultiplication', multiplication ? '1' : '0', 365);
+            setCookie('mathMunchDivision', division ? '1' : '0', 365);
+            setCookie('mathMunchAllowNegative', allowNegative ? '1' : '0', 365);
+            setCookie('mathMunchLevelUpInterval', gameState.levelUpInterval, 365);
+        }
+        
+        function loadSettings() {
+            const gridWidth = getCookie('mathMunchGridWidth');
+            const gridHeight = getCookie('mathMunchGridHeight');
+            const maxNumber = getCookie('mathMunchMaxNumber');
+            const addition = getCookie('mathMunchAddition');
+            const subtraction = getCookie('mathMunchSubtraction');
+            const multiplication = getCookie('mathMunchMultiplication');
+            const division = getCookie('mathMunchDivision');
+            const allowNegative = getCookie('mathMunchAllowNegative');
+            const levelUpInterval = getCookie('mathMunchLevelUpInterval');
+            
+            if (gridWidth && gridHeight) {
+                gameState.gridWidth = parseInt(gridWidth);
+                gameState.gridHeight = parseInt(gridHeight);
+            }
+            if (maxNumber) document.getElementById('max-number').value = maxNumber;
+            if (addition !== null) document.getElementById('addition').checked = addition === '1';
+            if (subtraction !== null) document.getElementById('subtraction').checked = subtraction === '1';
+            if (multiplication !== null) document.getElementById('multiplication').checked = multiplication === '1';
+            if (division !== null) document.getElementById('division').checked = division === '1';
+            if (allowNegative !== null) document.getElementById('allow-negative').checked = allowNegative === '1';
+            if (levelUpInterval) {
+                gameState.levelUpInterval = parseInt(levelUpInterval);
+            }
+        }
+        
+        function updateGridSelection() {
+            document.querySelectorAll('.grid-option').forEach(opt => {
+                const w = parseInt(opt.dataset.width);
+                const h = parseInt(opt.dataset.height);
+                if (w === gameState.gridWidth && h === gameState.gridHeight) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+        
+        function updateLevelUpSelection() {
+            document.querySelectorAll('.levelup-option').forEach(opt => {
+                const interval = parseInt(opt.dataset.interval);
+                if (interval === gameState.levelUpInterval) {
+                    opt.classList.add('selected');
+                } else {
+                    opt.classList.remove('selected');
+                }
+            });
+        }
+        
+        let gameState = {
+            gridWidth: 6,
+            gridHeight: 6,
+            maxNumber: 10,
+            operations: [],
+            score: 0,
+            lives: 3,
+            playerPos: { x: 2, y: 2 },
+            grid: [],
+            targetNumber: 0,
+            correctAnswers: 0,
+            characterState: 'happy',
+            isPaused: false,
+            isTimedMode: false,
+            timeRemaining: 120,
+            timerInterval: null,
+            allowNegative: false,
+            lastTargetNumber: null,
+            isLevelingUp: false,
+            levelUpInterval: 20
+        };
+        
+        function startGame(timedMode = false) {
+            const maxNum = parseInt(document.getElementById('max-number').value);
+            const ops = [];
+            
+            if (document.getElementById('addition').checked) ops.push('+');
+            if (document.getElementById('subtraction').checked) ops.push('-');
+            if (document.getElementById('multiplication').checked) ops.push('×');
+            if (document.getElementById('division').checked) ops.push('÷');
+            
+            if (ops.length === 0) {
+                alert('Please select at least one operation!');
+                return;
+            }
+            
+            saveSettings();
+            
+            const centerX = Math.floor(gameState.gridWidth / 2);
+            const centerY = Math.floor(gameState.gridHeight / 2);
+            
+            gameState.maxNumber = maxNum;
+            gameState.operations = ops;
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.playerPos = { x: centerX, y: centerY };
+            gameState.grid = [];
+            gameState.targetNumber = 0;
+            gameState.correctAnswers = 0;
+            gameState.characterState = 'happy';
+            gameState.isPaused = false;
+            gameState.isTimedMode = timedMode;
+            gameState.timeRemaining = 120;
+            gameState.timerInterval = null;
+            gameState.allowNegative = document.getElementById('allow-negative').checked;
+            
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('pause-menu').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+            
+            if (timedMode) {
+                document.getElementById('timer').style.display = 'block';
+                startTimer();
+            } else {
+                document.getElementById('timer').style.display = 'none';
+            }
+            
+            initGrid();
+            updateDisplay();
+        }
+        
+        function startTimer() {
+            updateTimerDisplay();
+            gameState.timerInterval = setInterval(() => {
+                if (!gameState.isPaused && !gameState.isLevelingUp) {
+                    gameState.timeRemaining--;
+                    updateTimerDisplay();
+                    
+                    if (gameState.timeRemaining <= 0) {
+                        clearInterval(gameState.timerInterval);
+                        endGame();
+                    }
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.timeRemaining / 60);
+            const seconds = gameState.timeRemaining % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('timer-value').textContent = timeStr;
+            
+            const timerEl = document.getElementById('timer');
+            if (gameState.timeRemaining <= 10) {
+                timerEl.classList.add('warning');
+            } else {
+                timerEl.classList.remove('warning');
+            }
+        }
+        
+        function addTimeBonus() {
+            gameState.timeRemaining += 10;
+            updateTimerDisplay();
+        }
+        
+        function generateMathProblem() {
+            const op = gameState.operations[Math.floor(Math.random() * gameState.operations.length)];
+            let num1, num2, result;
+            let attempts = 0;
+            
+            do {
+                if (op === '+') {
+                    num1 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    num2 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    result = num1 + num2;
+                } else if (op === '-') {
+                    num1 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    if (gameState.allowNegative) {
+                        num2 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    } else {
+                        num2 = Math.floor(Math.random() * num1) + 1;
+                    }
+                    result = num1 - num2;
+                } else if (op === '×') {
+                    num1 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    num2 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    result = num1 * num2;
+                } else if (op === '÷') {
+                    num2 = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    result = Math.floor(Math.random() * gameState.maxNumber) + 1;
+                    num1 = num2 * result;
+                }
+                attempts++;
+            } while (result === gameState.lastTargetNumber && attempts < 10);
+            
+            return {
+                display: `${num1} ${op} ${num2}`,
+                result: result
+            };
+        }
+        
+        function initGrid() {
+            gameState.grid = [];
+            for (let y = 0; y < gameState.gridHeight; y++) {
+                gameState.grid[y] = [];
+                for (let x = 0; x < gameState.gridWidth; x++) {
+                    gameState.grid[y][x] = generateMathProblem();
+                }
+            }
+            setNewTarget();
+        }
+        
+        function setNewTarget() {
+            const allResults = [];
+            for (let y = 0; y < gameState.gridHeight; y++) {
+                for (let x = 0; x < gameState.gridWidth; x++) {
+                    if (gameState.grid[y][x]) {
+                        allResults.push(gameState.grid[y][x].result);
+                    }
+                }
+            }
+            
+            // Remove duplicates to get unique results
+            const uniqueResults = [...new Set(allResults)];
+            
+            // If we have more than one unique result, try to pick a different one from current target
+            if (uniqueResults.length > 1) {
+                const filtered = uniqueResults.filter(r => r !== gameState.targetNumber);
+                gameState.lastTargetNumber = gameState.targetNumber;
+                gameState.targetNumber = filtered[Math.floor(Math.random() * filtered.length)];
+            } else {
+                gameState.lastTargetNumber = gameState.targetNumber;
+                gameState.targetNumber = allResults[Math.floor(Math.random() * allResults.length)];
+            }
+        }
+        
+        function getCharacter() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 20;
+            canvas.height = 20;
+            canvas.className = 'eagle-sprite';
+            const ctx = canvas.getContext('2d');
+            
+            // Eagle pixel art - grey color scheme
+            const colors = {
+                grey: '#8B8B8B',
+                darkGrey: '#5A5A5A',
+                lightGrey: '#B8B8B8',
+                yellow: '#FFD700',
+                white: '#FFFFFF',
+                orange: '#FFA500',
+                black: '#000000'
+            };
+            
+            if (gameState.characterState === 'happy') {
+                // Happy eagle - larger
+                // Head
+                ctx.fillStyle = colors.grey;
+                ctx.fillRect(7, 3, 6, 5);
+                ctx.fillRect(6, 4, 8, 3);
+                
+                // White head feathers
+                ctx.fillStyle = colors.white;
+                ctx.fillRect(8, 4, 4, 2);
+                
+                // Beak
+                ctx.fillStyle = colors.yellow;
+                ctx.fillRect(13, 5, 3, 2);
+                
+                // Eyes
+                ctx.fillStyle = colors.black;
+                ctx.fillRect(9, 5, 1, 1);
+                ctx.fillRect(11, 5, 1, 1);
+                
+                // Body
+                ctx.fillStyle = colors.grey;
+                ctx.fillRect(6, 8, 8, 5);
+                ctx.fillRect(7, 13, 6, 2);
+                
+                // Chest (lighter)
+                ctx.fillStyle = colors.lightGrey;
+                ctx.fillRect(8, 9, 4, 3);
+                
+                // Wings
+                ctx.fillStyle = colors.darkGrey;
+                ctx.fillRect(5, 9, 1, 3);
+                ctx.fillRect(14, 9, 1, 3);
+                ctx.fillRect(4, 10, 1, 3);
+                ctx.fillRect(15, 10, 1, 3);
+                
+                // Tail
+                ctx.fillStyle = colors.darkGrey;
+                ctx.fillRect(8, 15, 4, 2);
+                ctx.fillRect(7, 16, 1, 1);
+                ctx.fillRect(12, 16, 1, 1);
+                
+                // Feet
+                ctx.fillStyle = colors.orange;
+                ctx.fillRect(8, 15, 1, 1);
+                ctx.fillRect(11, 15, 1, 1);
+            } else {
+                // Sad eagle
+                // Head
+                ctx.fillStyle = colors.grey;
+                ctx.fillRect(7, 3, 6, 5);
+                ctx.fillRect(6, 4, 8, 3);
+                
+                // White head feathers
+                ctx.fillStyle = colors.white;
+                ctx.fillRect(8, 4, 4, 2);
+                
+                // Beak pointing down
+                ctx.fillStyle = colors.yellow;
+                ctx.fillRect(13, 6, 3, 2);
+                
+                // Eyes (sad)
+                ctx.fillStyle = colors.black;
+                ctx.fillRect(9, 6, 1, 1);
+                ctx.fillRect(11, 6, 1, 1);
+                
+                // Body
+                ctx.fillStyle = colors.grey;
+                ctx.fillRect(6, 8, 8, 5);
+                ctx.fillRect(7, 13, 6, 2);
+                
+                // Chest (lighter)
+                ctx.fillStyle = colors.lightGrey;
+                ctx.fillRect(8, 9, 4, 3);
+                
+                // Wings drooped
+                ctx.fillStyle = colors.darkGrey;
+                ctx.fillRect(5, 10, 1, 3);
+                ctx.fillRect(14, 10, 1, 3);
+                ctx.fillRect(4, 12, 1, 3);
+                ctx.fillRect(15, 12, 1, 3);
+                
+                // Tail
+                ctx.fillStyle = colors.darkGrey;
+                ctx.fillRect(8, 15, 4, 2);
+                
+                // Feet
+                ctx.fillStyle = colors.orange;
+                ctx.fillRect(8, 15, 1, 1);
+                ctx.fillRect(11, 15, 1, 1);
+            }
+            
+            return canvas;
+        }
+        
+        function createEggSprite() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 12;
+            canvas.height = 16;
+            canvas.className = 'egg-sprite';
+            const ctx = canvas.getContext('2d');
+            
+            // Egg colors
+            const eggShell = '#F5F5DC';
+            const eggShade = '#E8E8C8';
+            const eggHighlight = '#FFFFFF';
+            const eggOutline = '#999999';
+            
+            // Draw egg shape (narrower at top, wider at bottom)
+            // Outline - top
+            ctx.fillStyle = eggOutline;
+            ctx.fillRect(4, 1, 4, 1);  // Top narrow
+            ctx.fillRect(3, 2, 6, 1);
+            ctx.fillRect(2, 3, 8, 1);
+            
+            // Outline - middle (widest part)
+            ctx.fillRect(2, 4, 1, 6);
+            ctx.fillRect(9, 4, 1, 6);
+            
+            // Outline - bottom (rounded)
+            ctx.fillRect(2, 10, 8, 1);
+            ctx.fillRect(3, 11, 6, 1);
+            ctx.fillRect(4, 12, 4, 1);
+            
+            // Main shell - top
+            ctx.fillStyle = eggShell;
+            ctx.fillRect(4, 2, 4, 1);
+            ctx.fillRect(3, 3, 6, 1);
+            
+            // Main shell - middle
+            ctx.fillRect(3, 4, 6, 6);
+            
+            // Main shell - bottom
+            ctx.fillRect(3, 10, 6, 1);
+            ctx.fillRect(4, 11, 4, 1);
+            
+            // Shading on right side
+            ctx.fillStyle = eggShade;
+            ctx.fillRect(7, 4, 2, 1);
+            ctx.fillRect(7, 5, 2, 4);
+            ctx.fillRect(6, 9, 3, 1);
+            ctx.fillRect(5, 10, 3, 1);
+            
+            // Highlight on left side
+            ctx.fillStyle = eggHighlight;
+            ctx.fillRect(3, 4, 2, 1);
+            ctx.fillRect(4, 5, 1, 2);
+            
+            return canvas;
+        }
+        
+        function updateDisplay() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('target-number').textContent = gameState.targetNumber;
+            
+            const livesContainer = document.getElementById('lives');
+            livesContainer.innerHTML = '';
+            for (let i = 0; i < gameState.lives; i++) {
+                livesContainer.appendChild(createEggSprite());
+            }
+            
+            const gridContainer = document.getElementById('grid');
+            gridContainer.innerHTML = '';
+            gridContainer.className = `size-${gameState.gridWidth}-${gameState.gridHeight}`;
+            
+            for (let y = 0; y < gameState.gridHeight; y++) {
+                for (let x = 0; x < gameState.gridWidth; x++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.x = x;
+                    cell.dataset.y = y;
+                    
+                    // Add click handler to each cell
+                    cell.addEventListener('click', () => {
+                        if (gameState.isPaused || gameState.isLevelingUp) return;
+                        
+                        // If clicking on current position, select it
+                        if (x === gameState.playerPos.x && y === gameState.playerPos.y) {
+                            selectCell();
+                        } else {
+                            // Move to the clicked cell
+                            gameState.playerPos = { x, y };
+                            playSound('move');
+                            updateDisplay();
+                        }
+                    });
+                    
+                    if (x === gameState.playerPos.x && y === gameState.playerPos.y) {
+                        cell.classList.add('player');
+                        const character = document.createElement('div');
+                        character.className = 'character';
+                        character.appendChild(getCharacter());
+                        cell.appendChild(character);
+                    } else if (gameState.grid[y][x]) {
+                        cell.textContent = gameState.grid[y][x].display;
+                    }
+                    gridContainer.appendChild(cell);
+                }
+            }
+        }
+        
+        function movePlayer(dx, dy) {
+            if (gameState.isPaused || gameState.isLevelingUp) return;
+            const maxX = gameState.gridWidth - 1;
+            const maxY = gameState.gridHeight - 1;
+            const newX = Math.max(0, Math.min(maxX, gameState.playerPos.x + dx));
+            const newY = Math.max(0, Math.min(maxY, gameState.playerPos.y + dy));
+            if (newX !== gameState.playerPos.x || newY !== gameState.playerPos.y) {
+                playSound('move');
+                gameState.playerPos = { x: newX, y: newY };
+                updateDisplay();
+            }
+        }
+        
+        function selectCell() {
+            if (gameState.isPaused || gameState.isLevelingUp) return;
+            
+            const { x, y } = gameState.playerPos;
+            const cell = gameState.grid[y][x];
+            
+            if (!cell) return;
+            
+            playSound('pickup');
+            
+            const gridContainer = document.getElementById('grid');
+            const cellIndex = y * gameState.gridWidth + x;
+            const cellElement = gridContainer.children[cellIndex];
+            const character = cellElement.querySelector('.character');
+            if (character) {
+                character.classList.add('picking');
+                setTimeout(() => character.classList.remove('picking'), 300);
+            }
+            
+            setTimeout(() => {
+                if (cell.result === gameState.targetNumber) {
+                    playSound('correct');
+                    gameState.characterState = 'happy';
+                    gameState.score++;
+                    gameState.correctAnswers++;
+                    
+                    if (gameState.isTimedMode) {
+                        addTimeBonus();
+                    }
+                    
+                    const gridContainer = document.getElementById('grid');
+                    const cellIndex = y * gameState.gridWidth + x;
+                    const cellElement = gridContainer.children[cellIndex];
+                    cellElement.classList.add('correct');
+                    
+                    // Generate new problem that doesn't match current target
+                    let newProblem;
+                    let attempts = 0;
+                    do {
+                        newProblem = generateMathProblem();
+                        attempts++;
+                    } while (newProblem.result === gameState.targetNumber && attempts < 20);
+                    
+                    gameState.grid[y][x] = newProblem;
+                    
+                    // Set new target immediately for timed games, slightly delayed for regular
+                    const delay = gameState.isTimedMode ? 100 : 300;
+                    setTimeout(() => {
+                        setNewTarget();
+                        updateDisplay();
+                    }, delay);
+                    
+                    setTimeout(() => {
+                        updateDisplay();
+                    }, 500);
+                    
+                    // Check if it's time to level up using the configurable interval
+                    if (gameState.correctAnswers % gameState.levelUpInterval === 0) {
+                         levelUpTransition();
+                    }
+                } else {
+                    playSound('wrong');
+                    gameState.characterState = 'sad';
+                    gameState.lives--;
+                    
+                    const gridContainer = document.getElementById('grid');
+                    const cellIndex = y * gameState.gridWidth + x;
+                    const cellElement = gridContainer.children[cellIndex];
+                    cellElement.classList.add('wrong');
+                    gridContainer.classList.add('shake');
+                    
+                    updateDisplay();
+                    
+                    setTimeout(() => {
+                        cellElement.classList.remove('wrong');
+                        gridContainer.classList.remove('shake');
+                        
+                        if (gameState.lives <= 0) {
+                            endGame();
+                        } else {
+                            gameState.characterState = 'happy';
+                            updateDisplay();
+                        }
+                    }, 1000);
+                }
+            }, 100);
+        }
+        
+        function pauseGame() {
+            if (document.getElementById('game').style.display === 'block') {
+                playSound('pause');
+                gameState.isPaused = true;
+                document.getElementById('game').style.display = 'none';
+                document.getElementById('pause-menu').style.display = 'block';
+            }
+        }
+        
+        function resumeGame() {
+            gameState.isPaused = false;
+            document.getElementById('pause-menu').style.display = 'none';
+            document.getElementById('game').style.display = 'block';
+        }
+        
+        function goToMainMenu() {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            document.getElementById('pause-menu').style.display = 'none';
+            document.getElementById('game').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+        }
+        
+        function endGame() {
+            playSound('gameover');
+            
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            document.getElementById('game').style.display = 'none';
+            document.getElementById('game-over').style.display = 'block';
+            document.getElementById('final-score').textContent = `Final Score: ${gameState.score}`;
+            
+            const newHighScoreEl = document.getElementById('new-high-score');
+            const newTimedHighScoreEl = document.getElementById('new-timed-high-score');
+            newHighScoreEl.style.display = 'none';
+            newTimedHighScoreEl.style.display = 'none';
+            
+            let beatHighScore = false;
+            
+            if (gameState.isTimedMode) {
+                const timedHighScore = getTimedHighScore();
+                if (gameState.score > timedHighScore) {
+                    saveTimedHighScore(gameState.score);
+                    newTimedHighScoreEl.style.display = 'block';
+                    beatHighScore = true;
+                }
+            } else {
+                const highScore = getHighScore();
+                if (gameState.score > highScore) {
+                    saveHighScore(gameState.score);
+                    newHighScoreEl.style.display = 'block';
+                    beatHighScore = true;
+                }
+            }
+            
+            if (beatHighScore) {
+                setTimeout(() => {
+                    playSound('highscore');
+                    // Extra celebration sound
+                    setTimeout(() => playSound('correct'), 300);
+                }, 500);
+            }
+        }
+        
+        document.getElementById('start-btn').addEventListener('click', () => startGame(false));
+        document.getElementById('start-timed-btn').addEventListener('click', () => startGame(true));
+        document.getElementById('restart-btn').addEventListener('click', () => {
+            document.getElementById('game-over').style.display = 'none';
+            const wasTimed = gameState.isTimedMode;
+            startGame(wasTimed);
+        });
+        document.getElementById('game-over-menu-btn').addEventListener('click', () => {
+            document.getElementById('game-over').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+        });
+        
+        document.getElementById('resume-btn').addEventListener('click', resumeGame);
+        document.getElementById('restart-from-pause-btn').addEventListener('click', () => {
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            document.getElementById('pause-menu').style.display = 'none';
+            const wasTimed = gameState.isTimedMode;
+            startGame(wasTimed);
+        });
+        document.getElementById('main-menu-btn').addEventListener('click', goToMainMenu);
+        
+        document.getElementById('settings-btn').addEventListener('click', () => {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('settings-menu').style.display = 'block';
+            updateGridSelection();
+            updateLevelUpSelection();
+        });
+        
+        document.getElementById('settings-back-btn').addEventListener('click', () => {
+            saveSettings();
+            document.getElementById('settings-menu').style.display = 'none';
+            document.getElementById('menu').style.display = 'block';
+        });
+        
+        document.querySelectorAll('.grid-option').forEach(option => {
+            option.addEventListener('click', function() {
+                gameState.gridWidth = parseInt(this.dataset.width);
+                gameState.gridHeight = parseInt(this.dataset.height);
+                updateGridSelection();
+                saveSettings();
+            });
+        });
+        
+        document.querySelectorAll('.levelup-option').forEach(option => {
+            option.addEventListener('click', function() {
+                gameState.levelUpInterval = parseInt(this.dataset.interval);
+                updateLevelUpSelection();
+                saveSettings();
+            });
+        });
+        
+        document.getElementById('reset-high-score-btn').addEventListener('click', () => {
+            document.getElementById('confirm-dialog').classList.add('show');
+        });
+        
+        document.getElementById('confirm-yes-btn').addEventListener('click', () => {
+            saveHighScore(0);
+            saveTimedHighScore(0);
+            document.getElementById('confirm-dialog').classList.remove('show');
+        });
+        
+        document.getElementById('confirm-no-btn').addEventListener('click', () => {
+            document.getElementById('confirm-dialog').classList.remove('show');
+        });
+        
+        document.addEventListener('keydown', (e) => {
+            // Only handle keyboard events when game is active
+            if (document.getElementById('game').style.display !== 'block') return;
+            
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                if (document.getElementById('pause-menu').style.display === 'block') {
+                    resumeGame();
+                } else {
+                    pauseGame();
+                }
+                return;
+            }
+            
+            // Ignore other keys if paused
+            if (gameState.isPaused) return;
+            
+            switch(e.key.toLowerCase()) {
+                case 'w':
+                case 'arrowup':
+                    e.preventDefault();
+                    movePlayer(0, -1);
+                    break;
+                case 's':
+                case 'arrowdown':
+                    e.preventDefault();
+                    movePlayer(0, 1);
+                    break;
+                case 'a':
+                case 'arrowleft':
+                    e.preventDefault();
+                    movePlayer(-1, 0);
+                    break;
+                case 'd':
+                case 'arrowright':
+                    e.preventDefault();
+                    movePlayer(1, 0);
+                    break;
+                case ' ':
+                    e.preventDefault();
+                    selectCell();
+                    break;
+            }
+        });
+        
+        window.addEventListener('load', () => {
+            loadSettings();
+            updateHighScoreDisplay();
+        });
+    </script>
+</body>
+</html>
